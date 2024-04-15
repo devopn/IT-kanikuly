@@ -7,17 +7,17 @@ from config import config
 yandex_cloud_catalog = config.yandex_cloud_catalog
 yandex_api_key = config.yandex_api_key
 
-async def get_image(prompt, temperature) -> bytes:
+async def get_image(prompt, temperature, sys_promt) -> bytes:
     seed = int(round(datetime.now().timestamp()))
-
     body = {
     "modelUri": f"art://{yandex_cloud_catalog}/yandex-art/latest",
     "generationOptions": {"seed": seed, "temperature": temperature},
     "messages": [
-        {"weight": 1, "text": prompt[:499]},
+        {"weight": 0.99, "text": sys_promt},
+        {"weight": 0.01, "text": prompt[:499]}
+        
     ],
     }
-
     url = "https://llm.api.cloud.yandex.net/foundationModels/v1/imageGenerationAsync"
     headers = {"Authorization": f"Api-Key {yandex_api_key}"}
 
@@ -48,10 +48,11 @@ async def get_text(prompt, temperature, limit=400, system_prompt="") -> str:
     "modelUri": f"gpt://{yandex_cloud_catalog}/{yandex_gpt_model}",
     "completionOptions": {"stream": False, "temperature": temperature, "maxTokens": limit},
     "messages": [
-        {"role": "system", "text": system_prompt},
         {"role": "user", "text": prompt},
     ],
-}
+    }
+    if system_prompt:
+        body["messages"].update({"role": "system", "text": system_prompt})
 
     url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completionAsync"
     headers = {
@@ -70,13 +71,11 @@ async def get_text(prompt, temperature, limit=400, system_prompt="") -> str:
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
         response_json = json.loads(response.text)
-        # print(response_json)
         done = response_json["done"]
         while not done:
             response = await client.get(url, headers=headers)
             response_json = json.loads(response.text)
             done = response_json["done"]
-            # print(response_json)
             await asyncio.sleep(0.5)
             
     answer = response_json["response"]["alternatives"][0]["message"]["text"]

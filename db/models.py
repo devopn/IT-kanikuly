@@ -3,7 +3,6 @@ from sqlalchemy import String
 from sqlalchemy import Integer
 import sqlalchemy
 from sqlalchemy.types import ARRAY, JSON, DateTime
-from pydantic import BaseModel, Field
 from datetime import datetime
 from .base import Base
 
@@ -12,18 +11,22 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    uuid = Column(String)
     name = Column(String)
-    register_time = Column(DateTime, default=datetime.now)
+    photo = Column(String)
+    info = Column(String)
+    avatar = Column(String)
+    experience = Column(Integer, default=0)
+    registered_at = Column(DateTime, default=datetime.now)
+    
 
-    max_combo = Column(Integer, default=0)
-    max_count = Column(Integer, default=0)
-    # wave = Column(Integer, default=None, nullable=True)
-    current_session_id = Column(Integer,default=None, nullable=True)
 
-class UserSchema(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    register_time: datetime
-    current_session_id: int | None
+class Achievment(Base):
+    __tablename__ = "achievements"
+
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, index=True)
+    name = Column(String)
+    description = Column(String)
+    image = Column(String)
+    type = Column(String)
+

@@ -7,7 +7,12 @@ import configparser
 import asyncio
 from config import config
 
+# Import routers
 from handlers.command_handler import router as command_router
+from handlers.profile_handler import router as profile_router
+from handlers.menu_handler import router as menu_router
+from handlers.registration_handler import router as registration_router
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -24,7 +29,7 @@ async def main():
 
 
     dp = Dispatcher()
-    dp.include_routers(command_router)
+    dp.include_routers(command_router, profile_router, menu_router, registration_router)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

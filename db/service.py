@@ -4,21 +4,20 @@ from sqlalchemy.sql import func
 from .models import *
 from typing import Union
 import datetime
+from aiogram import types
+from db.base import get_session
 
 
-# async def get_questions(session: AsyncSession, count: int, mode: int, type: Union[int, None]) -> list[Question]:
-#     if mode == 0: # single
-#         result = await session.execute(select(Question).where(Question.type == type).order_by(func.random()).limit(count))
-#         return result.scalars().all()
+async def get_user(id:str) -> User:
+    async with await get_session() as session:
+        user = await session.execute(select(User).where(User.id == id))
+        user = user.scalars().first()
+        return user
 
-#     else: # mixed
-#         result = await session.execute(select(Question).order_by(func.random()).limit(count))
-#         return result.scalars().all()
+async def create_user(message: types.Message) -> User:
+    async with await get_session() as session:
+        user = User(id=message.from_user.id, name=message.from_user.full_name)
+        session.add(user)
+        await session.commit()
+        return user
 
-
-# async def get_user(db_session: AsyncSession, uuid:str) -> User:
-#     user = await db_session.execute(select(User).where(User.uuid == uuid))
-#     user = user.scalars().first()
-#     if user is None:
-#         raise AuthException("User not found")
-#     return user
