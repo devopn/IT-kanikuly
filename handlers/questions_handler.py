@@ -12,4 +12,4 @@ async def questions_callback(callback: types.CallbackQuery):
         case "my":
             pass
         case "daily":
-            pass
+            pass    

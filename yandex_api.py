@@ -13,9 +13,7 @@ async def get_image(prompt, temperature, sys_promt) -> bytes:
     "modelUri": f"art://{yandex_cloud_catalog}/yandex-art/latest",
     "generationOptions": {"seed": seed, "temperature": temperature},
     "messages": [
-        {"weight": 0.99, "text": sys_promt},
-        {"weight": 0.01, "text": prompt[:499]}
-        
+        {"weight": 0.99, "text": sys_promt}
     ],
     }
     url = "https://llm.api.cloud.yandex.net/foundationModels/v1/imageGenerationAsync"

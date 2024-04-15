@@ -63,9 +63,10 @@ async def reg_photo(message: types.Message, state: FSMContext):
         await message.answer("Спасибо за регистрацию! Начал создавать тебе персонального аватара", reply_markup=types.ReplyKeyboardRemove())
         image = await get_image(user.info, 0.6, "Создай аватара - дракона. Он должен быть по центру кадра, белого цвета. Фон одноцветный. Стиль мультипликационный. Милый. ") 
         # photo = await message.from_user.get_profile_photos().bot.send_photo(message.from_user.id, image)
-        with open(f"photos/{user.id}.png", "wb") as file:
-            file.write(image)
-        await message.answer_photo(photo=types.FSInputFile(path="photos/{user.id}.png"), caption=f"Привет я Edo.", reply_markup=get_menu_keyboard())
+        file = types.BufferedInputFile(filename="photos/{user.id}.png", file=image)
+        photo = await message.answer_photo(photo=file)
+        user.avatar = photo.photo[0].file_id
+        await message.answer("Привет я Edo.", reply_markup=get_menu_keyboard())
         session.add(user)
         await session.commit()
         await state.clear()

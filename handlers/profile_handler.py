@@ -8,7 +8,8 @@ router = Router()
 async def profile_callback(callback: types.CallbackQuery):
     act = callback.data.split(":")[1]
     user:User = await service.get_user(callback.from_user.id)
+    await callback.answer()
     match act:
         case "profile":
-            await callback.message.answer_photo(caption=f"{user.name} - {user.experience} опыта\n{user.info}", photo=user.avatar, reply_markup=get_profile_keyboard())
-        
+            await callback.message.answer_photo(photo=user.photo)
+            await callback.message.answer(f"{user.name} - {user.experience} опыта\n{user.info}", reply_markup=get_profile_keyboard())

@@ -13,4 +13,4 @@ async def start_command(message: types.Message):
             ]
         ))
     else:
-        await message.answer("Menu", reply_markup=get_menu_keyboard())
+        await message.answer("Привет, давай продолжим заниматься!", reply_markup=get_menu_keyboard())
