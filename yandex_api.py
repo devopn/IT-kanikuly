@@ -6,14 +6,14 @@ import asyncio
 from config import config
 yandex_cloud_catalog = config.yandex_cloud_catalog
 yandex_api_key = config.yandex_api_key
-
-async def get_image(prompt, temperature, sys_promt) -> bytes:
-    seed = int(round(datetime.now().timestamp()))
+apikey = "40d1649f-0493-4b70-98ba-98533de7710b"
+async def get_image(prompt, temperature, sys_promt, seed) -> bytes:
+    print(sys_promt)
     body = {
     "modelUri": f"art://{yandex_cloud_catalog}/yandex-art/latest",
     "generationOptions": {"seed": seed, "temperature": temperature},
     "messages": [
-        {"weight": 0.99, "text": sys_promt}
+        {"weight": 1, "text": sys_promt}
     ],
     }
     url = "https://llm.api.cloud.yandex.net/foundationModels/v1/imageGenerationAsync"
@@ -80,3 +80,13 @@ async def get_text(prompt, temperature, limit=400, system_prompt="") -> str:
     return answer
 
     
+async def geocode(address: str) -> dict:
+    url = "https://geocode-maps.yandex.ru/1.x/"
+    params = {"apikey": apikey, "geocode": address, "format": "json"}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params)
+    # response = httpx.get(url, params=params)
+    response_json = json.loads(response.text)
+    features = response_json["response"]["GeoObjectCollection"]["featureMember"]
+    return features[0]["GeoObject"]["boundedBy"]["Envelope"]
+

@@ -3,6 +3,10 @@ from db.base import get_session
 from aiogram.filters import StateFilter
 from db.models import *
 
+
+import face_recognition
+from db import service
+
 # States
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -31,7 +35,7 @@ async def reg_name(message: types.Message, state: FSMContext):
 async def reg_info(message: types.Message, state: FSMContext):
     await state.set_state("photo")
     await state.update_data(info=message.text)
-    await message.answer("Спасибо что рассказал! А теперь скинь свою фотографию. В будущем она поможет мне проверять твои работы.",
+    await message.answer("Спасибо что рассказал! А теперь скинь свою фотографию. В будущем она поможет мне проверять твои работы. Сделай снимок лица крупным планом при хорошем освещении",
                          reply_markup=types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text="Отправить фото из профиля")]], resize_keyboard=True))
 
 
@@ -56,16 +60,26 @@ async def reg_photo(message: types.Message, state: FSMContext):
             await message.answer("Пожалуйста пришлите фотографию")
             return
         photo = message.photo[-1].file_id
+    await message.bot.download(photo, f"photos/{message.from_user.id}tg.png")
+    image = face_recognition.load_image_file(f"photos/{message.from_user.id}tg.png")
+    face_locations = face_recognition.face_locations(image)
+    if len(face_locations) == 0:
+        await message.answer("Не удалось распознать ваше лицо. Пожалуйста, пришлите другое фото")
+        return
 
     async with await get_session() as session:
         data = await state.get_data()
         user = User(id=message.from_user.id, name=data.get("name"), info=data.get("info"), photo=photo)
         await message.answer("Спасибо за регистрацию! Начал создавать тебе персонального аватара", reply_markup=types.ReplyKeyboardRemove())
-        image = await get_image(user.info, 0.6, "Создай аватара - дракона. Он должен быть по центру кадра, белого цвета. Фон одноцветный. Стиль мультипликационный. Милый. ") 
+        seed = int(round(datetime.now().timestamp()))
+        image = await get_image(user.info, 0.6, "Создай аватара - дракона. Он должен быть по центру кадра, белого цвета. Фон одноцветный. Стиль мультипликационный. Милый. Используй только белый цвет, другие цвета не допускаются. Используй ТОЛЬКО белый цвет. Драко должен быть БЕЛОГО цвета", seed) 
         # photo = await message.from_user.get_profile_photos().bot.send_photo(message.from_user.id, image)
-        file = types.BufferedInputFile(filename="photos/{user.id}.png", file=image)
+        file = types.BufferedInputFile(filename=f"photos/{user.id}.png", file=image)
+        
         photo = await message.answer_photo(photo=file)
         user.avatar = photo.photo[0].file_id
+        user.seed = seed
+        user.username = message.from_user.username
         await message.answer("Привет я Edo.", reply_markup=get_menu_keyboard())
         session.add(user)
         await session.commit()
