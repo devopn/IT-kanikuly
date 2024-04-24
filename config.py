@@ -8,7 +8,7 @@ class Config:
     yandex_cloud_catalog: str
 
 config = Config(
-    tg_api="6559101734:AAHBFeZwi302xDXbxxdG19qAF8q7XTfVg4s",
-    db_url="postgresql+asyncpg://kandev:kandev@127.0.0.1:5432/kandev",
-    yandex_api_key="AQVNyJRotHlHIhGec5YfWrslmo8tsbsc8eatOf_V",
-    yandex_cloud_catalog="b1glihj9h7pkj7mnd6at")
+    tg_api="655s",
+    db_url="p",
+    yandex_api_key="AQVNyJRot",
+    yandex_cloud_catalog="")
